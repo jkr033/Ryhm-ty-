@@ -4,6 +4,10 @@
     ini_set('display_startup_errors',  '1');
     error_reporting(E_ALL);
 
+function saveDataToJson($data) {
+        $json_data = json_encode($data, JSON_PRETTY_PRINT);
+        file_put_contents('ryhmätyö.json', $json_data);
+    }
 
 $json = file_get_contents('ryhmätyö.json');
 $json_data = json_decode($json,true);
@@ -11,6 +15,23 @@ if ($json_data === null) {
     echo "Virhe JSONia";
     exit;
 }
+//Asiakkaan lisäys
+ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_customer'])) {
+        $new_person = array(
+            'id' => uniqid(), 
+            'first_name' => $_POST['first_name'],
+            'last_name' => $_POST['last_name'],
+            'email' => $_POST['email'],
+            'gender' => $_POST['gender'],
+            'ip_address' => $_POST['ip_address'],
+            'car' => $_POST['car'],
+            'hash' => $_POST['hash']
+        );
+        $json_data[] = $new_person;
+        saveDataToJson($json_data);
+        header("Location: {$_SERVER['PHP_SELF']}");
+        exit;
+    }
 
 $data = array();
 
@@ -103,6 +124,5 @@ $data[] = $person;
     </table>
     </body>
     </html>
-
 
 
