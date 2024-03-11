@@ -1,5 +1,4 @@
 <?php
-
     ini_set('display_errors',  '1');
     ini_set('display_startup_errors',  '1');
     error_reporting(E_ALL);
@@ -10,9 +9,9 @@ function saveDataToJson($data) {
     }
 
 $json = file_get_contents('ryhmätyö.json');
-$json_data = json_decode($json,true);
+$json_data = json_decode($json, true);
 if ($json_data === null) {
-    echo "Virhe JSONia";
+    echo "Virhe";
     exit;
 }
 //Asiakkaan lisäys
@@ -33,24 +32,20 @@ if ($json_data === null) {
         exit;
     }
 
-$data = array();
+$data = $json_data;
 
-foreach ($json_data as $record) {
-    $person = array(
-'id' => $record['id'],
-'first_name'=> $record['first_name'],
-'last_name' => $record['last_name'],
-'email' => $record['email'],
-'gender' => $record['gender'],
-'ip_address' => $record['ip_address'],
-'car' => $record['car'],
-'hash' => $record['hash'],
-    );
+$filtered_data = $data;
+if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['q']) && isset ($_GET['haku'])) {
+    $search_query = $_GET['q']; 
+    $search_field = $_GET['haku'];
 
-$data[] = $person;
+    $filtered_data = array_filter($data, function ($person) use ($search_query, $search_field) {
+        $search_field = strtolower($search_field);
+        return stripos($person[$search_field], $search_query) !== false;
+    });
 }
-?>
 
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -92,10 +87,20 @@ $data[] = $person;
 <body>
 <h1>Asiakaslista</h1>
  
-<form id="form">
-    <input type="search" id="query" name="q"
+<form id="form" method="GET"> 
+    <input type="search" id="query" name="q" 
     placeholder="...">
-    <button>Etsi</button>
+    <select name="haku" id="haku">
+        <option value="id">Id</option>
+        <option value="first_name">First Name</option>
+        <option value="last_name">Last Name</option>
+        <option value="email">Email</option>
+        <option value="gender">Gender</option>
+        <option value="ip_address">IP Address</option>
+        <option value="car">Car</option>
+        <option value="hash">Hash</option>
+    </select>
+    <button type="submit">Etsi</button>
 </form>
 <table>
      <tr>
